@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model automobiles {
+  id           Int           @id @default(autoincrement())
+  color        String        @db.VarChar(255)
+  price        Int
+  approved     Boolean       @default(false)
+  modelId      Int?
+  techDetailId Int?
+  description  String?
+  models       models?       @relation(fields: [modelId], references: [id])
+  tech_details tech_details? @relation(fields: [techDetailId], references: [id])
+  images       images[]
+  orders       orders[]
+  requests     requests[]
+}
+
+model body_types {
+  id           Int            @id @default(autoincrement())
+  bodyType     String         @unique @db.VarChar(255)
+  tech_details tech_details[]
+}
+
+model brands {
+  id     Int      @id @default(autoincrement())
+  brand  String   @unique @db.VarChar(255)
+  models models[]
+}
+
+model customers {
+  id         Int         @id @default(autoincrement())
+  surname    String      @db.VarChar(255)
+  name       String      @db.VarChar(255)
+  userAuthId Int?
+  user_auths user_auths? @relation(fields: [userAuthId], references: [id])
+  orders     orders[]
+  requests   requests[]
+}
+
+model engine_layouts {
+  id           Int            @id @default(autoincrement())
+  engineLayout String         @unique @db.VarChar(255)
+  tech_details tech_details[]
+}
+
+model fuel_types {
+  id           Int            @id @default(autoincrement())
+  fuelType     String         @unique @db.VarChar(255)
+  tech_details tech_details[]
+}
+
+model managers {
+  id               Int         @id @default(autoincrement())
+  surname          String      @db.VarChar(255)
+  name             String      @db.VarChar(255)
+  amountOfSoldCars Int?        @default(0)
+  salary           Int         @default(0)
+  address          String      @db.VarChar(255)
+  userAuthId       Int?
+  user_auths       user_auths? @relation(fields: [userAuthId], references: [id])
+  orders           orders[]
+}
+
+model models {
+  id          Int           @id @default(autoincrement())
+  model       String        @db.VarChar(255)
+  brandId     Int?
+  automobiles automobiles[]
+  brands      brands?       @relation(fields: [brandId], references: [id])
+}
+
+model orders {
+  id           Int          @id @default(autoincrement())
+  date         DateTime     @db.Timestamptz(6)
+  totalPrice   Int
+  status       Int          @default(0)
+  customerId   Int?
+  managerId    Int?
+  automobileId Int?
+  automobiles  automobiles? @relation(fields: [automobileId], references: [id])
+  customers    customers?   @relation(fields: [customerId], references: [id])
+  managers     managers?    @relation(fields: [managerId], references: [id])
+}
+
+model requests {
+  id           Int          @id @default(autoincrement())
+  automobileId Int?
+  customerId   Int?
+  automobiles  automobiles? @relation(fields: [automobileId], references: [id])
+  customers    customers?   @relation(fields: [customerId], references: [id])
+}
+
+model tech_details {
+  id             Int             @id @default(autoincrement())
+  power          Int
+  mileage        Int
+  releaseDate    DateTime        @db.Timestamptz(6)
+  engineSize     Decimal         @db.Decimal
+  fuelTypeId     Int?
+  bodyTypeId     Int?
+  engineLayoutId Int?
+  automobiles    automobiles[]
+  body_types     body_types?     @relation(fields: [bodyTypeId], references: [id])
+  engine_layouts engine_layouts? @relation(fields: [engineLayoutId], references: [id])
+  fuel_types     fuel_types?     @relation(fields: [fuelTypeId], references: [id])
+}
+
+model user_auths {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique @db.VarChar(255)
+  password  String      @db.VarChar(255)
+  phone     String?     @db.VarChar(255)
+  customers customers[]
+  managers  managers[]
+}
+
+model images {
+  id            Int          @id(map: "id_pk") @default(autoincrement())
+  automobile_id Int?
+  image         String?      @db.VarChar(255)
+  automobiles   automobiles? @relation(fields: [automobile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "foreign_key_name")
+}
